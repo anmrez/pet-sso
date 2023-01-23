@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title> SSO service </title>
+</head>
+<body style="background: #191919; color: #ffffffcc;">
+
+  <h1 style="text-align: center;"> SSO service </h1>
+
+  <section style="display: flex; justify-content: center;">
+    <section style="display: flex; flex-direction: column; width: 400px;" id="login">
+      <h2> Login </h2>
+      <label > Name </label>
+      <input type="name" name="name" id="name" style="margin-bottom: 10px; background: #242424; color: #ffffffcc;">
+      <label > Password </label>
+      <input type="password" name="password" id="password" style="margin-bottom: 10px; background: #242424; color: #ffffffcc;">
+      <button 
+        onclick="login()" 
+        style="width: 60px; height: 40px; border-radius: 0.15em; background: #242424; cursor: pointer; color: #ffffffcc;" 
+      > send </button>
+    </section>
+  
+    <!-- <section style="display: flex; flex-direction: column; width: 400px; margin-left: 50px;" id="registration">
+      <h2> Registration </h2>
+      <label > Name </label>
+      <input type="name" name="name" id="name" style="margin-bottom: 10px; background: #242424; color: #ffffffcc;">
+      <label > Password </label>
+      <input type="password" name="password" id="password" style="margin-bottom: 10px; background: #242424; color: #ffffffcc;">
+      <button 
+        onclick="registration()" 
+        style="width: 60px; height: 40px; border-radius: 0.15em; background: #242424; cursor: pointer; color: #ffffffcc;" 
+      > send </button>
+    </section> -->
+  </section>
+
+
+  <section style="display: flex; justify-content: center; margin-top: 40px;">
+    <div id="status" style="
+      height: 40px;
+      width: 700px; 
+      background: gray;
+      text-align: center;
+      font-size: 24px;
+      border-radius: 0.15em;
+    " > wait... </div>
+  </section>
+
+
+  <section style="display: flex; justify-content: center; margin-top: 50px; ">
+    <section id="profile" style="display: flex; flex-direction: column; background: #242424; padding-left: 30px; padding-right: 30px; padding-bottom: 30px; border-radius: 1em;" > 
+      <h3> Profile </h3>
+      <img id="image" style="border-radius: 1em; margin-bottom: 10px; width: 50px; height: 50px;">
+      <span id="name" style="margin-bottom: 10px;"> **** </span>
+      <button onclick="logout()" id="logout" > logout </button>
+    </section>
+  </section>
+
+  <script>
+    
+    const statusElement = document.querySelector( '#status' )
+    window.addEventListener( 'DOMContentLoaded', getProfile )
+
+    async function login(){
+
+      let formElement = document.querySelector( '#login' )
+
+      let data = {
+        name: formElement.querySelector( '#name' ).value,
+        password: formElement.querySelector( '#password' ).value
+      }
+
+      console.log( data )
+      if ( validateData( data ) ) {
+        statusElement.innerHTML = "Emty field in 'login' "
+        return;
+      } 
+
+      let response = await fetch( '/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify( data )
+      })
+      let responseData = await response.json();
+
+      console.log( responseData )
+      console.log( response )
+      if ( responseData.status === 301 ) {
+        console.log( location )
+        location.reload()
+        return;
+      } 
+
+      if ( responseData.status >= 400 ) {
+        statusElement.innerHTML = responseData.message
+        statusElement.style.background = '#ff000033'
+        return
+      }
+
+
+      statusElement.innerHTML = responseData.message
+      statusElement.style.background = '#00ff0033'
+      
+      let profile = document.querySelector( '#profile' )
+      let img = profile.querySelector( '#image' )
+      let name = profile.querySelector( '#name' )
+
+      img.src = responseData.image
+      img.alt = responseData.image
+      name.innerHTML = responseData.name
+
+    }
+
+
+    function validateData( data ){
+
+      if ( data.name === '' || data.password === '' ) {
+
+        statusElement.style.background = '#ff000033'
+        return true
+
+      }
+
+      return false
+
+    }
+
+
+    function redirectToReferer( link ){
+
+      if ( !link ) throw 'ERROR: link undefined'
+
+      let a = document.createElement( 'a' )
+
+      a.href = link
+
+      a.click()
+
+    }
+
+
+    async function logout(){
+
+      let response = await fetch( '/logout', {
+        method: 'POST'
+      })
+
+      if ( response.status >= 300 ) return
+
+      let profile = document.querySelector( '#profile' )
+      let img = profile.querySelector( '#image' )
+      let name = profile.querySelector( '#name' )
+
+      img.src = ''
+      img.alt = ''
+      name.innerHTML = '****'
+
+    }
+
+    async function getProfile(){
+
+      let response = await fetch( '/getProfile', {
+        method: 'POST'
+      })
+
+      let responseData = await response.json();
+
+      if ( response.status === 200 ) {
+
+        statusElement.innerHTML = 'You are already logged in'
+        statusElement.style.background = '#00ff0033'
+
+        let profile = document.querySelector( '#profile' )
+        let img = profile.querySelector( '#image' )
+        let name = profile.querySelector( '#name' )
+
+        img.src = responseData.image
+        img.alt = responseData.image
+        name.innerHTML = responseData.name
+
+      }
+
+    }
+
+
+  </script>
+
+</body>
+</html>

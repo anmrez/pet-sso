@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title> client service #1 </title>
+  <style>
+    .flex {
+      display: flex;
+    }
+    .center{
+      margin: auto;
+    }
+    .bg-main{
+      background: #141414;
+    }
+    .color-white{
+      color: #ffffffcc
+    }
+    .align-center{
+      align-items: center;
+    }
+    .btn{
+      border-radius: 0.15em;
+      background: #990026;
+      cursor: pointer;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+      color: #ffffffcc;
+    }
+    .btn:hover{
+      background: #DA0038;
+    }
+    .justify-between{
+      justify-content: space-between;
+    }
+    .userProfile{
+      width: 110px;
+      height: 40px;
+      padding-left: 10px ;
+      padding-right: 10px ;
+      padding-top: 5px;
+      padding-bottom: 5px;
+      display: flex;
+      background: #990026;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 0.35em;
+    }
+    .userProfile:hover{
+      background: #DA0038;
+    }
+    .userProfile img {
+      height: 30px;
+    }
+    .userProfile span {
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body class="bg-main color-white">
+  
+  <header class="flex align-center justify-between center"> 
+    <section style="display: flex; align-items: center;">
+      <h1 style="color: aqua; font-size: 34px;">
+        A
+      </h1>
+      <h1>
+        client service #1
+      </h1>
+    </section>
+    <!-- <a id="buttonLogin" class="btn " onclick="login()" href="http://192.168.0.2:3000"> -->
+    <a id="buttonLogin" class="btn " onclick="login()">
+      Login
+    </a>
+    <a id="userProfile" class="userProfile" style="display: none;" >
+      <img src="" alt="img" style="border-radius: 0.2em; margin-right: 10px;">
+      <span style="width: 100%;text-align: center;"> name </span>
+    </a>
+  </header>
+
+
+  <script>
+
+    async function login() {
+
+      let response = await fetch( '/getSSOAddress' )
+
+      if ( response.status >= 300 ) throw 'ERROR: bad request'
+
+      let data = await response.text()
+      let url = new URL( data )
+      let btn = document.createElement( 'a' )
+
+      btn.href = url
+      btn.click()
+
+    }
+
+
+    getProfile()
+    async function getProfile(){
+
+      let response = await fetch( '/getProfile', {
+        method: 'POST'
+      } ) 
+
+      if ( response.status >= 300 ) throw 'Error: profile undefined'
+
+      const responseBody = await response.json()
+
+      const buttonLogin = document.querySelector( '#buttonLogin' )
+      buttonLogin.style.display = 'none'
+      
+
+      const userProfile = document.querySelector( '#userProfile' )
+      userProfile.style.display = 'flex'
+      
+      const imgProfile = userProfile.getElementsByTagName( 'img' )[0]
+      imgProfile.src = responseBody.image
+      
+      const nameProfile = userProfile.getElementsByTagName( 'span' )[0]
+      nameProfile.innerHTML = responseBody.name
+
+    }
+
+  </script>
+</body>
+</html>
